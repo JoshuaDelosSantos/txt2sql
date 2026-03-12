@@ -1,0 +1,9 @@
+psycopg2-binary
+python-dotenv
+langchain
+langchain-community
+bs4
+langchain-google-genai
+langchain-core
+fastapi
+uvicorn[standard]
