@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).parent.parent
 load_dotenv(ROOT_DIR / ".env")
 
-CSV_DIR = ROOT_DIR / "dev" / "csv_data"
+CSV_DIR = ROOT_DIR / "dev" / "csv"
 
 def main():
     pass
@@ -35,7 +35,17 @@ def create_all(current):
     logger.info("All tables created.")
     
 def copy_table(current, table_name):
-    pass
+    csv_path = CSV_DIR / f"{table_name}.csv"
+    copy_sql = (
+        f"COPY {table_name} FROM STDIN "
+        f"WITH (FORMAT CSV, HEADER TRUE, NULL 'NULL')"
+    )
+    with csv_path.open("r", encoding="utf-8") as f:
+        current.copy_expert(copy_sql, f)
+    
+    current.execute(f"SELECT COUNT(*) FROM {table_name}")
+    count = current.fetchone()[0]
+    logger.info("Loaded %d rows into %s", count, table_name)
 
 
 # Statements
@@ -193,6 +203,10 @@ if __name__ == "__main__":
     
     with conn.cursor() as cur:
         # drop_all(cur)
-        create_all(cur)
+        # create_all(cur)
+        for table_name, _ in CREATE_STATEMENTS:
+            logger.info("Loading table: %s", table_name)
+            copy_table(cur, table_name)
+            logger.info("Finished loading table: %s", table_name)
         
     conn.commit()
