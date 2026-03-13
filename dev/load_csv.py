@@ -18,7 +18,18 @@ load_dotenv(ROOT_DIR / ".env")
 CSV_DIR = ROOT_DIR / "dev" / "csv"
 
 def main():
-    pass
+    conn = get_connection()
+    conn.autocommit = False
+    
+    with conn.cursor() as cur:
+        drop_all(cur)
+        create_all(cur)
+        for table_name, _ in CREATE_STATEMENTS:
+            logger.info("Loading table: %s", table_name)
+            copy_table(cur, table_name)
+            logger.info("Finished loading table: %s", table_name)
+        
+    conn.commit()
 
 def drop_all(current):
     for statement in DROP_STATEMENTS:
@@ -198,15 +209,16 @@ CREATE_STATEMENTS = [
 ]
 
 if __name__ == "__main__":
-    conn = get_connection()
-    conn.autocommit = False
+    main()
+    # conn = get_connection()
+    # conn.autocommit = False
     
-    with conn.cursor() as cur:
-        # drop_all(cur)
-        # create_all(cur)
-        for table_name, _ in CREATE_STATEMENTS:
-            logger.info("Loading table: %s", table_name)
-            copy_table(cur, table_name)
-            logger.info("Finished loading table: %s", table_name)
+    # with conn.cursor() as cur:
+    #     drop_all(cur)
+    #     create_all(cur)
+    #     for table_name, _ in CREATE_STATEMENTS:
+    #         logger.info("Loading table: %s", table_name)
+    #         copy_table(cur, table_name)
+    #         logger.info("Finished loading table: %s", table_name)
         
-    conn.commit()
+    # conn.commit()
