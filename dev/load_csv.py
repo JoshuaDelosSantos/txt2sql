@@ -8,7 +8,10 @@ from pathlib import Path
 import psycopg2
 from dotenv import load_dotenv
 from db import get_connection
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).parent.parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -18,7 +21,11 @@ def main():
     pass
 
 def drop_all(current):
-    pass
+    for statement in DROP_STATEMENTS:
+        current.execute(statement)
+        logger.info("Executed statement: %s", statement)
+    logger.info("All tables dropped.")
+    
 
 def copy_table(current, table_name):
     pass
@@ -172,3 +179,13 @@ CREATE_STATEMENTS = [
         )
     """),
 ]
+
+if __name__ == "__main__":
+    conn = get_connection()
+    conn.autocommit = False
+    
+    with conn.cursor() as cur:
+        drop_all(cur)
+        
+    conn.commit()
+    logger.info("Database reset complete. All tables dropped.")
