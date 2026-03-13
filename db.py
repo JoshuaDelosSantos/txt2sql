@@ -12,3 +12,12 @@ def get_connection():
         user=settings.db_user,
         password=settings.db_password
     )
+    
+if __name__ == "__main__":
+    # Test the database connection
+    try:
+        conn = get_connection()
+        print("Database connection successful!")
+        conn.close()
+    except Exception as e:
+        print(f"Database connection failed: {e}")
