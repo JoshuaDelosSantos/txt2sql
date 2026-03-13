@@ -27,6 +27,13 @@ def drop_all(current):
     logger.info("All tables dropped.")
     
 
+def create_all(current):
+    for table_name, ddl in CREATE_STATEMENTS:
+        current.execute(ddl)
+        logger.info("Executed statement: %s", ddl)
+        logger.info("Created table: %s", table_name)
+    logger.info("All tables created.")
+    
 def copy_table(current, table_name):
     pass
 
@@ -185,7 +192,7 @@ if __name__ == "__main__":
     conn.autocommit = False
     
     with conn.cursor() as cur:
-        drop_all(cur)
+        # drop_all(cur)
+        create_all(cur)
         
     conn.commit()
-    logger.info("Database reset complete. All tables dropped.")
