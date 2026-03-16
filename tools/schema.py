@@ -4,9 +4,13 @@ This can be used to help generate SQL queries based on natural language input.
 """
 
 import json
+import logging
 
 from config import settings
 from db import get_connection
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 def _get_tables(cur) -> list[str]:
     cur.execute(
@@ -100,6 +104,7 @@ def refresh_schemas() -> list[str]:
     try:
         with conn.cursor() as cur:
             tables = _get_tables(cur)
+            logger.info("Found %d tables", len(tables))
             for table in tables:
                 schema = {
                     "table": table,
@@ -109,6 +114,7 @@ def refresh_schemas() -> list[str]:
                 }
                 out = schema_dir / f"{table}.json"
                 out.write_text(json.dumps(schema, indent=2, default=str))
+                logger.info("Wrote schema for table: %s", table)
 
             (schema_dir / "tables.json").write_text(json.dumps(tables, indent=2))
     finally:
@@ -118,4 +124,4 @@ def refresh_schemas() -> list[str]:
 
 if __name__ == "__main__":
     tables = refresh_schemas()
-    print(f"Refreshed schemas for tables: {tables}")
+    logger.info("Refreshed schemas for tables: %s", tables)
