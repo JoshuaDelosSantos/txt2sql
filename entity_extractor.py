@@ -38,3 +38,45 @@ prompt = ChatPromptTemplate.from_messages(
         ("human", "{query}"),
     ]
 )
+
+chain = None
+
+def _get_chain():
+    global chain
+    if chain is None:
+        settings.require_llm()
+        llm = init_chat_model(settings.chat_model, google_api_key=settings.api_key)
+        structured_llm = llm.with_structured_output(EntityList, include_raw=True)
+        chain = prompt | structured_llm
+    return chain
+
+def extract_entities(query: str, available_tables: list[str]) -> list[str]:
+    """Return the subset of available_tables relevant to the user query.
+
+    Calls the LLM to identify relevant tables, then filters the result to
+    only names present in available_tables as a guard against hallucination.
+    """
+    tables_str = "\n".join(f"- {t}" for t in available_tables)
+
+    logger.debug("query=%r  available=%s", query, available_tables)
+
+    result = _get_chain().invoke({"query": query, "tables": tables_str})
+    raw = result["raw"]
+    parsed: EntityList = result["parsed"]
+
+    logger.debug("llm returned: %s", parsed.tables)
+
+    usage = getattr(raw, "usage_metadata", None)
+    if usage:
+        logger.info(
+            "tokens: %d in / %d out / %d total",
+            usage["input_tokens"],
+            usage["output_tokens"],
+            usage["total_tokens"],
+            extra={"token_usage": usage},
+        )
+
+    entities = [t for t in parsed.tables if t in available_tables]
+    logger.debug("filtered: %s", entities)
+
+    return EntityResult(entities, usage)
