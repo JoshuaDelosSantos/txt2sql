@@ -3,11 +3,12 @@ Connect to a DB and extract entities from text query.
 """
 
 import logging
-from lanngchain.chat_models import init_chat_model
+from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from agents.results import EntityResult
+from results import EntityResult
 from config import settings
+import json
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ def extract_entities(query: str, available_tables: list[str]) -> list[str]:
     raw = result["raw"]
     parsed: EntityList = result["parsed"]
 
-    logger.debug("llm returned: %s", parsed.tables)
+    logger.debug("llm returned: %s", parsed.entities)
 
     usage = getattr(raw, "usage_metadata", None)
     if usage:
@@ -76,7 +77,21 @@ def extract_entities(query: str, available_tables: list[str]) -> list[str]:
             extra={"token_usage": usage},
         )
 
-    entities = [t for t in parsed.tables if t in available_tables]
+    entities = [t for t in parsed.entities if t in available_tables]
     logger.debug("filtered: %s", entities)
 
     return EntityResult(entities, usage)
+
+if __name__ == "__main__":
+    
+    def get_available_tables() -> list[str]:
+        """Return table names from the index written by the schema agent."""
+        tables_path = settings.schema_dir / "tables.json"
+        if not tables_path.exists():
+            return []
+        return json.loads(tables_path.read_text())
+    
+    available_tables = get_available_tables()
+    query = "How many orders were placed in January?"
+    entities = extract_entities(query, available_tables)
+    print(entities)
