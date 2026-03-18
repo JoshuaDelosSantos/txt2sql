@@ -4,6 +4,8 @@ This file will return the SQL statements needed to create the database schema.
 
 import logging
 import re
+import json
+from pathlib import Path
 
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
@@ -52,3 +54,19 @@ def _get_chain():
         llm = init_chat_model(settings.chat_model, google_api_key=settings.api_key)
         chain = prompt | llm
     return chain
+
+# Function to load schema for context
+def load_schema_context(entity_names: list[str]) -> str:
+    """Load and merge schema JSONs for the given entity/table names.
+
+    Returns a formatted string suitable for injection into an LLM prompt.
+    """
+    schema_dir: Path = settings.schema_dir
+    schemas = []
+
+    for name in entity_names:
+        filepath = schema_dir / f"{name}.json"
+        if filepath.exists():
+            schemas.append(json.loads(filepath.read_text()))
+
+    return json.dumps(schemas, indent=2)
