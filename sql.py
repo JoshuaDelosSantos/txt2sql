@@ -65,8 +65,46 @@ def load_schema_context(entity_names: list[str]) -> str:
     schemas = []
 
     for name in entity_names:
+        logger.info("Loading schema for entity/table: %s", name)
         filepath = schema_dir / f"{name}.json"
         if filepath.exists():
+            logger.info("Found schema file: %s", filepath)
             schemas.append(json.loads(filepath.read_text()))
+            logger.info("Loaded schema for %s: %s", name, schemas[-1])
+        else:
+            logger.warning("Schema file not found for %s: %s", name, filepath)
 
     return json.dumps(schemas, indent=2)
+
+def _strip_fences(text: str) -> str:
+    """Remove markdown code fences if the LLM wrapped the output in them."""
+    text = text.strip()
+    text = re.sub(r"^```(?:sql)?\s*\n?", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\n?```$", "", text)
+    return text.strip()
+
+
+def generate_sql(query: str, entities: list[str]) -> str:
+    """Return a PostgreSQL query that answers the natural language query.
+
+    Loads schema context from the router for the given entity list, then
+    calls the LLM to generate a grounded PostgreSQL query.
+    """
+    logger.debug("query=%r  entities=%s", query, entities)
+
+    schema_context = load_schema_context(entities)
+    response = _get_chain().invoke({"query": query, "schema_context": schema_context})
+
+    usage = getattr(response, "usage_metadata", None)
+    if usage:
+        logger.info(
+            "tokens: %d in / %d out / %d total",
+            usage["input_tokens"],
+            usage["output_tokens"],
+            usage["total_tokens"],
+            extra={"token_usage": usage},
+        )
+
+    sql = _strip_fences(response.content)
+
+    return SQLResult(sql, usage)
