@@ -54,8 +54,12 @@ def _get_chain():
 def get_available_tables() -> list[str]:
         """Return table names from the index written by the schema agent."""
         tables_path = settings.schema_dir / "tables.json"
+        logger.debug("Looking for available tables in %s", tables_path)
         if not tables_path.exists():
+            logger.debug("Tables file not found.")
             return []
+        logger.debug("Found tables file.")
+
         return json.loads(tables_path.read_text())
 
 def extract_entities(query: str, available_tables: list[str]) -> list[str]:
