@@ -108,3 +108,13 @@ def generate_sql(query: str, entities: list[str]) -> str:
     sql = _strip_fences(response.content)
 
     return SQLResult(sql, usage)
+
+if __name__ == "__main__":
+    import entity_extractor as ee
+    
+    available_tables = ee.get_available_tables()
+    query = "How many orders were placed in January?"
+    entities = ee.extract_entities(query, available_tables)
+
+    sql = generate_sql(query, entities)
+    print(sql)
