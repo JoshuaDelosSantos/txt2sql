@@ -51,6 +51,13 @@ def _get_chain():
         chain = prompt | structured_llm
     return chain
 
+def get_available_tables() -> list[str]:
+        """Return table names from the index written by the schema agent."""
+        tables_path = settings.schema_dir / "tables.json"
+        if not tables_path.exists():
+            return []
+        return json.loads(tables_path.read_text())
+
 def extract_entities(query: str, available_tables: list[str]) -> list[str]:
     """Return the subset of available_tables relevant to the user query.
 
