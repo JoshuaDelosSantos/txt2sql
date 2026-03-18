@@ -10,7 +10,11 @@ from results import EntityResult
 from config import settings
 import json
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s',
+    force=True,
+)
 logger = logging.getLogger(__name__)
 
 class EntityList(BaseModel):
@@ -54,11 +58,11 @@ def _get_chain():
 def get_available_tables() -> list[str]:
         """Return table names from the index written by the schema agent."""
         tables_path = settings.schema_dir / "tables.json"
-        logger.debug("Looking for available tables in %s", tables_path)
+        logger.info("Looking for available tables in %s", tables_path)
         if not tables_path.exists():
-            logger.debug("Tables file not found.")
+            logger.info("Tables file not found.")
             return []
-        logger.debug("Found tables file.")
+        logger.info("Found tables file.")
 
         return json.loads(tables_path.read_text())
 
@@ -70,13 +74,13 @@ def extract_entities(query: str, available_tables: list[str]) -> list[str]:
     """
     tables_str = "\n".join(f"- {t}" for t in available_tables)
 
-    logger.debug("query=%r  available=%s", query, available_tables)
+    logger.info("query=%r  available=%s", query, available_tables)
 
     result = _get_chain().invoke({"query": query, "tables": tables_str})
     raw = result["raw"]
     parsed: EntityList = result["parsed"]
 
-    logger.debug("llm returned: %s", parsed.entities)
+    logger.info("llm returned: %s", parsed.entities)
 
     usage = getattr(raw, "usage_metadata", None)
     if usage:
@@ -89,19 +93,11 @@ def extract_entities(query: str, available_tables: list[str]) -> list[str]:
         )
 
     entities = [t for t in parsed.entities if t in available_tables]
-    logger.debug("filtered: %s", entities)
+    logger.info("filtered: %s", entities)
 
     return EntityResult(entities, usage)
 
 if __name__ == "__main__":
-    
-    def get_available_tables() -> list[str]:
-        """Return table names from the index written by the schema agent."""
-        tables_path = settings.schema_dir / "tables.json"
-        if not tables_path.exists():
-            return []
-        return json.loads(tables_path.read_text())
-    
     available_tables = get_available_tables()
     query = "How many orders were placed in January?"
     entities = extract_entities(query, available_tables)
