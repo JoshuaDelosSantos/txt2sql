@@ -5,13 +5,16 @@ API endpoints for the SQL query generator.
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from entity_extractor import extract_entities, get_available_tables
 from schema import refresh_schemas
 from sql import generate_sql as sql_generate
+from db import get_connection
 
 app = FastAPI(title="text2sql", description="Natural language to PostgreSQL")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Models
@@ -76,3 +79,12 @@ def _sum_usage(*usages: TokenUsage | None) -> TokenUsage:
 @app.get("/")
 def ui():
     return FileResponse("static/index.html")
+
+@app.get("/check-db")
+def check_db():
+    try:
+        conn = get_connection()
+        conn.close()
+        return {"status": "ok", "message": "Database connection successful."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
