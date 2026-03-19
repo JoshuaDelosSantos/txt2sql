@@ -69,3 +69,10 @@ def _sum_usage(*usages: TokenUsage | None) -> TokenUsage:
     inp = sum(usage.input_tokens for usage in usages if usage)
     out = sum(usage.output_tokens for usage in usages if usage)
     return TokenUsage(input_tokens=inp, output_tokens=out, total_tokens=inp + out)
+
+
+# Routes
+
+@app.get("/")
+def ui():
+    return FileResponse("static/index.html")
