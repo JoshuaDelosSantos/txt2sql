@@ -13,3 +13,15 @@ Api based Python project that turns natural language into SQL queries
 ```
 # docker run -p 5000:5000 txt2sql
 ```
+
+# Endpoits
+## Check DB connection
+```
+check-db/
+
+# Returns
+{"status": "ok", "message": "Database connection successful."}
+
+# Raises
+HTTPException
+```
