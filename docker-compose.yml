@@ -1,4 +1,19 @@
 services:
+  app:
+    build: .
+    container_name: txt2sql_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - /app/venv
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16
     container_name: txt2sql_db
