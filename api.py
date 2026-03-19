@@ -53,4 +53,19 @@ class HealthResponse(BaseModel):
     status: str
     tables: list[str]
     
-    
+
+# Helper functions
+
+def _to_token_usage(usage_dict: dict | None) -> TokenUsage | None:
+    if usage_dict is None:
+        return None
+    return TokenUsage(
+        input_tokens=usage_dict["input_tokens"],
+        output_tokens=usage_dict["output_tokens"],
+        total_tokens=usage_dict["total_tokens"],
+    )
+
+def _sum_usage(*usages: TokenUsage | None) -> TokenUsage:
+    inp = sum(usage.input_tokens for usage in usages if usage)
+    out = sum(usage.output_tokens for usage in usages if usage)
+    return TokenUsage(input_tokens=inp, output_tokens=out, total_tokens=inp + out)
