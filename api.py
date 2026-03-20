@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from entity_extractor import extract_entities, get_available_tables
+from entity_extractor import extract_entities as extract_query_entities, get_available_tables
 from schema import refresh_schemas
 from sql import generate_sql as sql_generate
 from db import get_connection
@@ -20,7 +20,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Models
 
 class QueryRequest(BaseModel):
-    quuery: str
+    query: str
     
 
 class TokenUsage(BaseModel):
@@ -91,16 +91,16 @@ def check_db():
 
 
 @app.post("/extract-entities", response_model=ExtractEntitiesResponse)
-def extract_entities(request: QueryRequest) -> ExtractEntitiesResponse:
+def extract_entities_endpoint(request: QueryRequest) -> ExtractEntitiesResponse:
     """Extract entities from the input query."""
     available_tables = get_available_tables()
-    entities = extract_entities(request.query, available_tables)
+    entities = extract_query_entities(request.query, available_tables)
     
     ee_usage = _to_token_usage(getattr(entities, "usage", None))
     
     return ExtractEntitiesResponse(
-        query=request.query,
-        entities=entities,
+        query=request.query,    
+        entities=list(entities),
         token_usage=RequestTokenUsage(
             entity_extraction=ee_usage,
             total=_sum_usage(ee_usage),
