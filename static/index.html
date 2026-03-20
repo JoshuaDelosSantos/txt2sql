@@ -6,8 +6,16 @@
 		<title>txt2sql - DB Check</title>
 	</head>
 	<body>
+		<div id="entity-display">Entity results will appear here.</div>
+		<form id="entity-form">
+			<label for="query-input">Query</label>
+			<textarea id="query-input" name="query" rows="6" cols="60" placeholder="Type your query here"></textarea>
+			<br />
+			<button id="check-entity-btn" type="submit">Check Entity</button>
+		</form>
+		<br />
 	    <button id="check-db-btn" type="button">Check DB Connection</button>
-        <div id="status"></div>
+		<div id="status"></div>
 		<script src="/static/scripts.js"></script>
 	</body>
 </html>
