@@ -90,6 +90,7 @@ def check_db():
         raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
 
 
+@app.post("/extract-entities", response_model=ExtractEntitiesResponse)
 def extract_entities(request: QueryRequest) -> ExtractEntitiesResponse:
     """Extract entities from the input query."""
     available_tables = get_available_tables()
