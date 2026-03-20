@@ -88,3 +88,20 @@ def check_db():
         return {"status": "ok", "message": "Database connection successful."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
+
+
+def extract_entities(request: QueryRequest) -> ExtractEntitiesResponse:
+    """Extract entities from the input query."""
+    available_tables = get_available_tables()
+    entities = extract_entities(request.query, available_tables)
+    
+    ee_usage = _to_token_usage(getattr(entities, "usage", None))
+    
+    return ExtractEntitiesResponse(
+        query=request.query,
+        entities=entities,
+        token_usage=RequestTokenUsage(
+            entity_extraction=ee_usage,
+            total=_sum_usage(ee_usage),
+        ),
+    )
