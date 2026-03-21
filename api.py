@@ -106,3 +106,25 @@ def extract_entities_endpoint(request: QueryRequest) -> ExtractEntitiesResponse:
             total=_sum_usage(ee_usage),
         ),
     )
+
+
+@app.post("/generate-sql", response_model=GenerateSQLResponse)
+def generate_sql_endpoint(request: QueryRequest) -> GenerateSQLResponse:
+    """Generate SQL from a natural language query."""
+    available_tables = get_available_tables()
+    entities = extract_query_entities(request.query, available_tables)
+    ee_usage = _to_token_usage(getattr(entities, "usage", None))
+    
+    sql_result = sql_generate(request.query, list(entities))
+    sg_usage = _to_token_usage(getattr(sql_result, "usage", None))
+    
+    return GenerateSQLResponse(
+        query=request.query,
+        entities=list(entities),
+        sql=str(sql_result),
+        token_usage=RequestTokenUsage(
+            entity_extraction=ee_usage,
+            sql_generation=sg_usage,
+            total=_sum_usage(ee_usage, sg_usage),
+        ),
+    )
