@@ -4,29 +4,31 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>txt2sql - DB Check</title>
+		<link rel="stylesheet" href="/static/styles.css" />
 	</head>
 	<body>
-		<div id="entity-display">Entity results will appear here.</div>
-		<form id="entity-form">
-			<label for="query-input">Query</label>
-			<textarea id="query-input" name="query" rows="6" cols="60" placeholder="Type your query here"></textarea>
-			<br />
-			<button id="check-entity-btn" type="submit">Check Entity</button>
-			<button id="generate-sql-btn" type="button">Generate SQL</button>
-		</form>
-		<br />
-		<div id="sql-display" style="display: none;">
-			<h3>Generated SQL:</h3>
-			<pre id="sql-result"></pre>
-		</div>
-		<br />
-	    <button id="check-db-btn" type="button">Check DB Connection</button>
-		<div id="status"></div>
-		<br />
-		<div id="token-logs" style="border: 1px solid #ccc; padding: 10px; margin-top: 20px; display: none;">
-			<h3>Token Usage Log:</h3>
-			<div id="token-display"></div>
-		</div>
+		<main>
+			<h1>txt2sql</h1>
+			<div id="entity-display">Entity results will appear here.</div>
+			<form id="entity-form">
+				<label for="query-input">Query</label>
+				<textarea id="query-input" name="query" rows="6" placeholder="Type your query here"></textarea>
+				<div>
+					<button id="check-entity-btn" type="submit">Check Entity</button>
+					<button id="generate-sql-btn" type="button">Generate SQL</button>
+				</div>
+			</form>
+			<div id="sql-display" style="display: none;">
+				<h3>Generated SQL:</h3>
+				<pre id="sql-result"></pre>
+			</div>
+		    <button id="check-db-btn" type="button">Check DB Connection</button>
+			<div id="status"></div>
+			<div id="token-logs" style="display: none;">
+				<h3>Token Usage Log:</h3>
+				<div id="token-display"></div>
+			</div>
+		</main>
 		<script src="/static/scripts.js"></script>
 	</body>
 </html>
