@@ -3,6 +3,9 @@ const statusEl = document.getElementById("status");
 const entityForm = document.getElementById("entity-form");
 const queryInput = document.getElementById("query-input");
 const entityDisplay = document.getElementById("entity-display");
+const generateSqlBtn = document.getElementById("generate-sql-btn");
+const sqlDisplay = document.getElementById("sql-display");
+const sqlResult = document.getElementById("sql-result");
 
 function renderEntities(entities) {
     const c = document.getElementById('entity-display');
@@ -100,4 +103,46 @@ async function checkEntities(event) {
 
 if (entityForm) {
 	entityForm.addEventListener("submit", checkEntities);
+}
+
+async function generateSQL() {
+	if (!queryInput || !sqlDisplay || !sqlResult) {
+		return;
+	}
+
+	const query = queryInput.value.trim();
+	if (!query) {
+		sqlResult.textContent = "Please enter a query first.";
+		sqlDisplay.style.display = "block";
+		return;
+	}
+
+	sqlResult.textContent = "Generating SQL...";
+	sqlDisplay.style.display = "block";
+
+	try {
+		const response = await fetch("/generate-sql", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ query }),
+		});
+
+		const data = await response.json();
+
+		if (!response.ok) {
+			const errorText = data?.detail || "SQL generation failed.";
+			throw new Error(errorText);
+		}
+
+		const sql = data?.sql || "No SQL generated.";
+		sqlResult.textContent = sql;
+	} catch (error) {
+		sqlResult.textContent = error instanceof Error ? error.message : "Unexpected error while generating SQL.";
+	}
+}
+
+if (generateSqlBtn) {
+	generateSqlBtn.addEventListener("click", generateSQL);
 }
