@@ -12,7 +12,13 @@
 			<textarea id="query-input" name="query" rows="6" cols="60" placeholder="Type your query here"></textarea>
 			<br />
 			<button id="check-entity-btn" type="submit">Check Entity</button>
+			<button id="generate-sql-btn" type="button">Generate SQL</button>
 		</form>
+		<br />
+		<div id="sql-display" style="display: none;">
+			<h3>Generated SQL:</h3>
+			<pre id="sql-result"></pre>
+		</div>
 		<br />
 	    <button id="check-db-btn" type="button">Check DB Connection</button>
 		<div id="status"></div>
