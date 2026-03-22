@@ -30,10 +30,11 @@ Schema context:
 {schema_context}
 
 Rules:
-- Return only the raw SQL query — no markdown, no code fences, no explanation
-- Use only the tables and columns present in the schema
-- Use standard PostgreSQL syntax
-- Return an empty string if the question cannot be answered with the given schema
+- Return only the raw SQL query — no markdown, no code fences, no explanation.
+- Use only the tables and columns present in the schema.
+- Use standard PostgreSQL syntax.
+- Return an empty string if the question cannot be answered with the given schema.
+- Label column names with the end user in mind, not the database. For example, if the schema has a column named "cust_id" that refers to customers, label it as "customer_id" in the SQL query for clarity.
 """
 
 prompt = ChatPromptTemplate.from_messages(
