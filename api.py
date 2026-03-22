@@ -66,6 +66,12 @@ class ExecuteQueryResponse(BaseModel):
     error: str | None = None
     error_type: str | None = None
 
+
+class RefreshSchemaResponse(BaseModel):
+    success: bool
+    tables: list[str]
+    message: str
+
 # Helper functions
 
 def _to_token_usage(usage_dict: dict | None) -> TokenUsage | None:
@@ -144,3 +150,17 @@ def execute_query_endpoint(request: QueryRequest) -> ExecuteQueryResponse:
     """Execute a PostgreSQL query and return results."""
     result = execute_query(request.query)
     return ExecuteQueryResponse(**result)
+
+
+@app.post("/refresh-schema", response_model=RefreshSchemaResponse)
+def refresh_schema_endpoint() -> RefreshSchemaResponse:
+    """Refresh database schema by introspecting the connected database."""
+    try:
+        tables = refresh_schemas()
+        return RefreshSchemaResponse(
+            success=True,
+            tables=tables,
+            message=f"Schema refreshed successfully. {len(tables)} table(s) found."
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Schema refresh failed: {e}")
