@@ -13,8 +13,11 @@
 			<div class="layout-container">
 				<section id="generation-section" class="column">
 					<h2>SQL Generation</h2>
-					<div id="entity-display">Entity results will appear here.</div>
-					<form id="entity-form">
+				<button id="refresh-schema-btn" type="button" style="align-self: flex-start; margin-bottom: 1rem;">Refresh Schema</button>
+				<div id="refreshed-tables" style="display: none; margin-bottom: 1rem;">
+					<h3>Available Tables:</h3>
+					<div id="tables-list" style="background-color: #f0f4ff; border: 1px solid #e0e7ff; border-radius: 6px; padding: 0.75rem; max-height: 200px; overflow-y: auto;"></div>
+				</div>
 						<label for="query-input">Natural Language Query</label>
 						<textarea id="query-input" name="query" rows="4" placeholder="Type your query here"></textarea>
 						<div>
@@ -44,7 +47,6 @@
 			</div>
 			
 		    <button id="check-db-btn" type="button">Check DB Connection</button>
-		    <button id="refresh-schema-btn" type="button">Refresh Schema</button>
 			<div id="status"></div>
 		</main>
 		<script src="/static/scripts.js"></script>
