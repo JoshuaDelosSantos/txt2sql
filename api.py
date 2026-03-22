@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from entity_extractor import extract_entities as extract_query_entities, get_available_tables
 from schema import refresh_schemas
 from sql import generate_sql as sql_generate
-from db import get_connection
+from db import get_connection, execute_query
 
 app = FastAPI(title="text2sql", description="Natural language to PostgreSQL")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -55,7 +55,16 @@ class RefreshSchemasResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     tables: list[str]
-    
+
+
+class ExecuteQueryResponse(BaseModel):
+    success: bool
+    columns: list[str] | None = None
+    rows: list[list[str]] | None = None
+    row_count: int | None = None
+    message: str | None = None
+    error: str | None = None
+    error_type: str | None = None
 
 # Helper functions
 
@@ -128,3 +137,10 @@ def generate_sql_endpoint(request: QueryRequest) -> GenerateSQLResponse:
             total=_sum_usage(ee_usage, sg_usage),
         ),
     )
+
+
+@app.post("/execute-query", response_model=ExecuteQueryResponse)
+def execute_query_endpoint(request: QueryRequest) -> ExecuteQueryResponse:
+    """Execute a PostgreSQL query and return results."""
+    result = execute_query(request.query)
+    return ExecuteQueryResponse(**result)
