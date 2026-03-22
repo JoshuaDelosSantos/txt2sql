@@ -166,19 +166,18 @@ if (entityForm) {
 }
 
 async function generateSQL() {
-	if (!queryInput || !sqlDisplay || !sqlResult) {
+	if (!queryInput || !sqlInput) {
 		return;
 	}
 
 	const query = queryInput.value.trim();
 	if (!query) {
-		sqlResult.textContent = "Please enter a query first.";
-		sqlDisplay.style.display = "block";
+		sqlInput.placeholder = "Please enter a query first.";
 		return;
 	}
 
-	sqlResult.textContent = "Generating SQL...";
-	sqlDisplay.style.display = "block";
+	sqlInput.value = "Generating SQL...";
+	sqlInput.disabled = true;
 
 	try {
 		const response = await fetch("/generate-sql", {
@@ -197,10 +196,12 @@ async function generateSQL() {
 		}
 
 		const sql = data?.sql || "No SQL generated.";
-		sqlResult.textContent = sql;
+		sqlInput.value = sql;
 		renderTokenUsage(data?.token_usage);
 	} catch (error) {
-		sqlResult.textContent = error instanceof Error ? error.message : "Unexpected error while generating SQL.";
+		sqlInput.value = error instanceof Error ? error.message : "Unexpected error while generating SQL.";
+	} finally {
+		sqlInput.disabled = false;
 	}
 }
 
