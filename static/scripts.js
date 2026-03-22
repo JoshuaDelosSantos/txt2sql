@@ -14,6 +14,8 @@ const executeBtn = document.getElementById("execute-btn");
 const resultsDisplay = document.getElementById("results-display");
 const resultsContainer = document.getElementById("results-container");
 const refreshSchemaBtn = document.getElementById("refresh-schema-btn");
+const refreshedTablesEl = document.getElementById("refreshed-tables");
+const tablesListEl = document.getElementById("tables-list");
 
 function renderEntities(entities) {
     const c = document.getElementById('entity-display');
@@ -144,9 +146,23 @@ async function refreshSchema() {
 
 		statusEl.className = "ok";
 		statusEl.textContent = data?.message || "Schema refreshed successfully.";
+		
+		// Display the list of refreshed tables
+		if (data?.tables && Array.isArray(data.tables)) {
+			tablesListEl.innerHTML = '';
+			data.tables.forEach(table => {
+				const tag = document.createElement('span');
+				tag.className = 'entity-tag';
+				tag.textContent = table;
+				tablesListEl.appendChild(tag);
+				tablesListEl.appendChild(document.createTextNode(' '));
+			});
+			refreshedTablesEl.style.display = 'block';
+		}
 	} catch (error) {
 		statusEl.className = "error";
 		statusEl.textContent = error instanceof Error ? error.message : "Unexpected error while refreshing schema.";
+		refreshedTablesEl.style.display = 'none';
 	} finally {
 		refreshSchemaBtn.disabled = false;
 	}
