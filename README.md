@@ -10,6 +10,8 @@ cd txt2sql
 ```
 
 ## Environment Setup
+
+### Database Configuration
 Create a `.env` file in the project root with your database configuration:
 ```
 DB_HOST=your_postgres_host
@@ -18,6 +20,21 @@ DB_NAME=your_database_name
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 ```
+
+### API Key and LLM Configuration
+Currently, we only have support for Gemini models
+
+1. **Get a Google Gemini API Key:**
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Sign in with your Google account
+   - Create a new API key
+   - Copy the key and add it to your `.env` file
+
+2. **Configure the API Key and Model:**
+   ```
+   API_KEY=your_google_gemini_api_key
+   CHAT_MODEL=google_genai:gemini-2.5-flash-lite
+   ```
 
 ## Run with Docker Compose
 ```
