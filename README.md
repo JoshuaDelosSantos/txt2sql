@@ -59,6 +59,22 @@ This loads CSV files from the `dev/csv/` directory into the database, including:
 ### Using Your Own Database
 To connect to an external PostgreSQL database, update the `.env` file with your connection details and ensure the database name, user, and password are correctly configured before running Docker Compose.
 
+# How It Works
+
+## SQL Generation Flow
+
+The application uses a multi-stage process to convert natural language queries into SQL:
+
+1. **Schema Introspection** — Database schema is introspected to extract table structures, column definitions, and relationships. This information is persisted as JSON files in the `schemas/` directory.
+
+2. **Entity Extraction** — The natural language query is analysed by an LLM to identify which database tables are relevant to answering the question.
+
+3. **Schema Context Loading** — The JSON schema files for identified entities are retrieved and merged into a single context document.
+
+4. **SQL Generation** — The natural language query and schema context are sent to the Gemini API, which generates valid PostgreSQL syntax.
+
+5. **Query Execution** — The generated (or user-provided) SQL query is executed against the connected database, returning results or error messages.
+
 # Endpoints
 
 ## Check DB Connection
@@ -145,3 +161,21 @@ Response (on error):
   "error_type": "SyntaxError"
 }
 ```
+
+## Refresh Schema
+`POST /refresh-schema`
+
+Introspects the connected database and refreshes schema definitions. This must be executed after connecting to a new database or after schema changes.
+
+Response:
+```
+{
+  "success": true,
+  "tables": ["table1", "table2", "table3"],
+  "message": "Schema refreshed successfully. 3 table(s) found."
+}
+```
+
+# Flow
+
+
