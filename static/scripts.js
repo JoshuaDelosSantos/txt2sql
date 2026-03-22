@@ -13,6 +13,7 @@ const sqlInput = document.getElementById("sql-input");
 const executeBtn = document.getElementById("execute-btn");
 const resultsDisplay = document.getElementById("results-display");
 const resultsContainer = document.getElementById("results-container");
+const refreshSchemaBtn = document.getElementById("refresh-schema-btn");
 
 function renderEntities(entities) {
     const c = document.getElementById('entity-display');
@@ -115,6 +116,44 @@ async function checkDatabaseConnection() {
 
 if (checkButton) {
 	checkButton.addEventListener("click", checkDatabaseConnection);
+}
+
+async function refreshSchema() {
+	if (!refreshSchemaBtn || !statusEl) {
+		return;
+	}
+
+	refreshSchemaBtn.disabled = true;
+	statusEl.className = "";
+	statusEl.textContent = "Refreshing schema...";
+
+	try {
+		const response = await fetch("/refresh-schema", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+
+		const data = await response.json();
+
+		if (!response.ok) {
+			const errorText = data?.detail || "Schema refresh failed.";
+			throw new Error(errorText);
+		}
+
+		statusEl.className = "ok";
+		statusEl.textContent = data?.message || "Schema refreshed successfully.";
+	} catch (error) {
+		statusEl.className = "error";
+		statusEl.textContent = error instanceof Error ? error.message : "Unexpected error while refreshing schema.";
+	} finally {
+		refreshSchemaBtn.disabled = false;
+	}
+}
+
+if (refreshSchemaBtn) {
+	refreshSchemaBtn.addEventListener("click", refreshSchema);
 }
 
 async function checkEntities(event) {
