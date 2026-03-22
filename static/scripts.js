@@ -8,6 +8,11 @@ const sqlDisplay = document.getElementById("sql-display");
 const sqlResult = document.getElementById("sql-result");
 const tokenLogsContainer = document.getElementById("token-logs");
 const tokenDisplay = document.getElementById("token-display");
+const executeForm = document.getElementById("execute-form");
+const sqlInput = document.getElementById("sql-input");
+const executeBtn = document.getElementById("execute-btn");
+const resultsDisplay = document.getElementById("results-display");
+const resultsContainer = document.getElementById("results-container");
 
 function renderEntities(entities) {
     const c = document.getElementById('entity-display');
@@ -201,4 +206,99 @@ async function generateSQL() {
 
 if (generateSqlBtn) {
 	generateSqlBtn.addEventListener("click", generateSQL);
+}
+
+async function executeQuery(event) {
+	event.preventDefault();
+
+	if (!sqlInput || !resultsDisplay || !resultsContainer) {
+		return;
+	}
+
+	const sql = sqlInput.value.trim();
+	if (!sql) {
+		resultsContainer.innerHTML = '<p style="color: #b91c1c;">Please enter a SQL query first.</p>';
+		resultsDisplay.style.display = "block";
+		return;
+	}
+
+	resultsContainer.innerHTML = '<p style="color: #6b21a8;">Executing query...</p>';
+	resultsDisplay.style.display = "block";
+
+	try {
+		const response = await fetch("/execute-query", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ query: sql }),
+		});
+
+		const data = await response.json();
+
+		if (!response.ok) {
+			const errorText = data?.detail || "Query execution failed.";
+			throw new Error(errorText);
+		}
+
+		if (data.success) {
+			let html = `<div class="query-success">Query executed successfully</div>`;
+			
+			if (data.columns && data.rows) {
+				// Display results as table
+				html += '<table>';
+				html += '<thead><tr>';
+				data.columns.forEach(col => {
+					html += `<th>${escapeHtml(col)}</th>`;
+				});
+				html += '</tr></thead>';
+				html += '<tbody>';
+				data.rows.forEach(row => {
+					html += '<tr>';
+					row.forEach(cell => {
+						html += `<td>${escapeHtml(cell)}</td>`;
+					});
+					html += '</tr>';
+				});
+				html += '</tbody>';
+				html += '</table>';
+				html += `<p style="margin-top: 1rem; color: #666; font-size: 0.85rem;">Rows: ${data.row_count || 0}</p>`;
+			} else if (data.message) {
+				html += `<p>${escapeHtml(data.message)}</p>`;
+			}
+			resultsContainer.innerHTML = html;
+		} else {
+			const errorType = data.error_type || 'Error';
+			const errorMsg = data.error || 'Unknown error occurred.';
+			resultsContainer.innerHTML = `
+				<div class="query-error">
+					<span class="error-type">${escapeHtml(errorType)}</span>
+					${escapeHtml(errorMsg)}
+				</div>
+			`;
+		}
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : "Unexpected error while executing query.";
+		resultsContainer.innerHTML = `
+			<div class="query-error">
+				<span class="error-type">Error</span>
+				${escapeHtml(errorMsg)}
+			</div>
+		`;
+	}
+}
+
+function escapeHtml(text) {
+	const map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+	return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+if (executeForm) {
+	executeForm.addEventListener("submit", executeQuery);
 }
